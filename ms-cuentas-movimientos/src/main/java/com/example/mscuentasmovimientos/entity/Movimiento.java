@@ -1,39 +1,53 @@
 package com.example.mscuentasmovimientos.entity;
 
+import com.example.mscuentasmovimientos.entity.enums.TipoMovimiento;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "movimientos")
+@Table(name = "movimientos", indexes = {
+    @Index(name = "idx_movimientos_cuenta_id", columnList = "cuenta_id"),
+    @Index(name = "idx_movimientos_fecha", columnList = "fecha"),
+    @Index(name = "idx_movimientos_tipo", columnList = "tipo_movimiento")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Movimiento {
+@Builder
+@EqualsAndHashCode(callSuper = true)
+public class Movimiento extends AuditableEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @NotNull(message = "La fecha es requerida")
+    @Column(nullable = false)
+    private LocalDateTime fecha;
 
-    @Column(name = "fecha_movimiento", nullable = false)
-    private LocalDateTime fechaMovimiento = LocalDateTime.now();
+    @NotNull(message = "El tipo de movimiento es requerido")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_movimiento", nullable = false, length = 30)
+    private TipoMovimiento tipoMovimiento;
 
-    @Column(nullable = false, length = 10)
-    private String tipoMovimiento; // DEBITO, CREDITO
-
+    @NotNull(message = "El valor es requerido")
+    @DecimalMin(value = "0.01", message = "El valor debe ser mayor a 0")
+    @Digits(integer = 15, fraction = 2, message = "El valor debe tener máximo 15 dígitos enteros y 2 decimales")
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
 
+    @NotNull(message = "El saldo es requerido")
+    @DecimalMin(value = "0.0", inclusive = true, message = "El saldo no puede ser negativo")
+    @Digits(integer = 15, fraction = 2, message = "El saldo debe tener máximo 15 dígitos enteros y 2 decimales")
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo;
 
-    @Column(nullable = false)
-    private Long cuentaId;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @NotNull(message = "El ID de la cuenta es requerido")
+    @Column(name = "cuenta_id", nullable = false, columnDefinition = "UUID")
+    private UUID cuentaId;
 }

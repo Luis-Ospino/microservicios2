@@ -1,41 +1,40 @@
 package com.example.msclientespersonas.entity;
 
+import com.example.msclientespersonas.entity.enums.EstadoCliente;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "clientes")
+@Table(name = "clientes", indexes = {
+    @Index(name = "idx_clientes_persona_id", columnList = "persona_id"),
+    @Index(name = "idx_clientes_estado", columnList = "estado")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente {
+@Builder
+@EqualsAndHashCode(callSuper = true)
+public class Cliente extends AuditableEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @NotNull(message = "El ID de la persona es requerido")
+    @Column(name = "persona_id", nullable = false, columnDefinition = "UUID")
+    private UUID personaId;
 
-    @Column(nullable = false, length = 100)
-    private String nombre;
-
-    @Column(nullable = false, unique = true, length = 20)
-    private String identificacion;
-
-    @Column(nullable = false, length = 100)
-    private String direccion;
-
-    @Column(nullable = false, length = 20)
-    private String telefono;
-
-    @Column(nullable = false, length = 100)
+    @NotBlank(message = "La contraseña no puede estar vacía")
+    @Size(min = 8, max = 255, message = "La contraseña debe tener entre 8 y 255 caracteres")
+    @Column(nullable = false, length = 255)
     private String contrasena;
 
-    @Column(nullable = false)
-    private Boolean estado = true;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
+    @NotNull(message = "El estado es requerido")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private EstadoCliente estado = EstadoCliente.ACTIVO;
 }
