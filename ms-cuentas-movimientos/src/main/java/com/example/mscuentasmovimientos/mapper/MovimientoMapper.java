@@ -10,8 +10,5 @@ public interface MovimientoMapper {
 
     MovimientoDto toDto(Movimiento movimiento);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     Movimiento toEntity(MovimientoCreateDto movimientoCreateDto);
 }
