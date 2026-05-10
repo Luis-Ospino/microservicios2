@@ -1,0 +1,126 @@
+version: '3.9'
+
+services:
+  postgres-clientes:
+    image: postgres:16
+    container_name: postgres_clientes
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ms_clientes_personas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_clientes_data:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  postgres-cuentas:
+    image: postgres:16
+    container_name: postgres_cuentas
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ms_cuentas_movimientos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg_cuentas_data:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  ms-clientes-personas:
+    build:
+      context: ./ms-clientes-personas
+      dockerfile: Dockerfile
+    image: ms-clientes-personas:latest
+    container_name: ms_clientes_personas
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-clientes:5432/ms_clientes_personas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8081
+    depends_on:
+      - postgres-clientes
+      - rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+  ms-cuentas-movimientos:
+    build:
+      context: ./ms-cuentas-movimientos
+      dockerfile: Dockerfile
+    image: ms-cuentas-movimientos:latest
+    container_name: ms_cuentas_movimientos
+    restart: unless-stopped
+    ports:
+      - 8082:8082
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-cuentas:5432/ms_cuentas_movimientos
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      SERVER_PORT: 8082
+    depends_on:
+      - postgres-cuentas
+      - rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8082"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_net
+
+volumes:
+  pg_clientes_data:
+  pg_cuentas_data:
+
+networks:
+  microservices_net:
+    driver: bridge
