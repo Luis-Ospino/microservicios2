@@ -2,28 +2,21 @@ package com.example.mscuentasmovimientos.dto;
 
 import com.example.mscuentasmovimientos.entity.enums.EstadoCuenta;
 import com.example.mscuentasmovimientos.entity.enums.TipoCuenta;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CuentaDto {
+public class CuentaUpdateDto {
 
-    private UUID id;
-    private String numeroCuenta;
     private TipoCuenta tipoCuenta;
-    private BigDecimal saldoInicial;
-    private BigDecimal saldoDisponible;
+
     private EstadoCuenta estado;
-    private UUID clienteId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

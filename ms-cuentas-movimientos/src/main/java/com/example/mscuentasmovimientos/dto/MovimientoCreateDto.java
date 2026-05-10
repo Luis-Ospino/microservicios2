@@ -1,6 +1,7 @@
 package com.example.mscuentasmovimientos.dto;
 
 import com.example.mscuentasmovimientos.entity.enums.TipoMovimiento;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,14 +15,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MovimientoDto {
+public class MovimientoCreateDto {
 
-    private UUID id;
+    @NotNull(message = "La fecha es requerida")
     private LocalDateTime fecha;
+
+    @NotNull(message = "El tipo de movimiento es requerido")
     private TipoMovimiento tipoMovimiento;
+
+    @NotNull(message = "El valor es requerido")
+    @DecimalMin(value = "0.01", message = "El valor debe ser mayor a 0")
+    @Digits(integer = 15, fraction = 2, message = "El valor debe tener máximo 15 dígitos enteros y 2 decimales")
     private BigDecimal valor;
-    private BigDecimal saldo;
+
+    @NotNull(message = "El ID de la cuenta es requerido")
     private UUID cuentaId;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

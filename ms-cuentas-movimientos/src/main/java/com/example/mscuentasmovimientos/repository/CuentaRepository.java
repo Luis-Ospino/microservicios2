@@ -6,11 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface CuentaRepository extends JpaRepository<Cuenta, Long> {
+public interface CuentaRepository extends JpaRepository<Cuenta, UUID> {
 
     Optional<Cuenta> findByNumeroCuenta(String numeroCuenta);
 
-    List<Cuenta> findByClienteId(Long clienteId);
+    List<Cuenta> findByClienteId(UUID clienteId);
+
+    boolean existsByNumeroCuenta(String numeroCuenta);
 }

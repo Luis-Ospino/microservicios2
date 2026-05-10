@@ -1,9 +1,9 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 COPY src src
-RUN chmod +x ./mvnw && ./mvnw -Dmaven.repo.local=/root/.m2/repository clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
 RUN apt-get update && apt-get install -y curl netcat && rm -rf /var/lib/apt/lists/*
