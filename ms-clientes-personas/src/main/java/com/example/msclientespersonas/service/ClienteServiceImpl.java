@@ -1,29 +1,35 @@
 package com.example.msclientespersonas.service;
 
 import com.example.msclientespersonas.dto.ClienteCreateDto;
+import com.example.msclientespersonas.dto.ClienteCreadoEvent;
 import com.example.msclientespersonas.dto.ClienteDto;
 import com.example.msclientespersonas.dto.ClienteUpdateDto;
 import com.example.msclientespersonas.entity.Cliente;
 import com.example.msclientespersonas.exception.ResourceNotFoundException;
 import com.example.msclientespersonas.mapper.ClienteMapper;
+import com.example.msclientespersonas.messaging.ClientePublisher;
 import com.example.msclientespersonas.repository.ClienteRepository;
 import com.example.msclientespersonas.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional
 public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final PersonaRepository personaRepository;
     private final ClienteMapper clienteMapper;
+    private final ClientePublisher clientePublisher;
 
     @Override
     public ClienteDto createCliente(ClienteCreateDto clienteCreateDto) {
@@ -39,6 +45,21 @@ public class ClienteServiceImpl implements ClienteService {
 
         Cliente cliente = clienteMapper.toEntity(clienteCreateDto);
         Cliente clienteGuardado = clienteRepository.save(cliente);
+
+        // Publicar evento de cliente creado
+        try {
+            ClienteCreadoEvent event = ClienteCreadoEvent.builder()
+                    .clienteId(clienteGuardado.getId())
+                    .personaId(clienteGuardado.getPersonaId())
+                    .contrasena(clienteGuardado.getContrasena())
+                    .fechaCreacion(clienteGuardado.getCreatedAt())
+                    .build();
+            clientePublisher.publicarClienteCreado(event);
+        } catch (Exception e) {
+            log.error("Error al publicar evento cliente.creado para cliente ID: {}", clienteGuardado.getId(), e);
+            // No lanzamos excepción para no fallar la creación del cliente
+        }
+
         return clienteMapper.toDto(clienteGuardado);
     }
 
