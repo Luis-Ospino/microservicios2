@@ -1,288 +1,173 @@
-# Microservicios de Clientes y Cuentas
+# Reto Técnico Backend – Microservicios Bancarios
 
-Este proyecto implementa una arquitectura de microservicios para la gestión de clientes, personas, cuentas y movimientos bancarios utilizando Spring Boot 3, Java 21 y PostgreSQL.
+## Tabla de Contenidos
+
+- [Arquitectura](#arquitectura)
+- [Microservicios](#microservicios)
+- [Tecnologías](#tecnologías)
+- [Ejecución Local](#ejecución-local)
+- [Docker Compose](#docker-compose)
+- [Endpoints Principales](#endpoints-principales)
+- [Pruebas](#pruebas)
+- [Decisiones Técnicas](#decisiones-técnicas)
+- [Mejoras Futuras](#mejoras-futuras)
+- [Comunicación Asíncrona](#comunicación-asíncrona)
+
+---
 
 ## Arquitectura
 
-### Microservicios
+El sistema está basado en una arquitectura de microservicios desacoplados, orientada a la gestión bancaria de clientes, cuentas y movimientos. Cada microservicio es autónomo, con su propia base de datos y comunicación asíncrona mediante RabbitMQ.
 
-1. **ms-clientes-personas** (Puerto 8081)
-   - Gestión de personas y clientes
-   - Base de datos: PostgreSQL (puerto 5433)
+<!-- Puedes agregar un diagrama aquí si lo deseas -->
 
-2. **ms-cuentas-movimientos** (Puerto 8082)
-   - Gestión de cuentas y movimientos
-   - Base de datos: PostgreSQL (puerto 5434)
+- **API Gateway** (futuro): punto de entrada único (no implementado en este reto)
+- **Microservicios**: cada uno expone su propia API REST
+- **Bases de datos independientes**: PostgreSQL por servicio
+- **Mensajería**: RabbitMQ para eventos y sincronización
 
-### Infraestructura
+---
 
-- **PostgreSQL**: Dos instancias separadas para cada microservicio
-- **RabbitMQ**: Message broker con management plugin (puerto 15672)
-- **Docker Compose**: Orquestación completa de servicios
+## Microservicios
 
-## Tecnologías Utilizadas
+### 1. ms-clientes-personas
+- Gestión de clientes y personas
+- CRUD completo
+- Validaciones y auditoría
+
+### 2. ms-cuentas-movimientos
+- Gestión de cuentas bancarias y movimientos
+- Reglas de negocio para depósitos y retiros
+- Reportes agregados por cliente y periodo
+
+---
+
+## Tecnologías
 
 - **Java 21**
-- **Spring Boot 3.2.0**
+- **Spring Boot 3.2.x**
 - **Spring Data JPA**
+- **Spring Validation**
 - **Spring AMQP** (RabbitMQ)
-- **PostgreSQL 16**
-- **RabbitMQ 3-management**
 - **MapStruct** (mapeo DTO)
 - **Lombok**
-- **Bean Validation**
-- **OpenAPI/Swagger**
+- **PostgreSQL 16**
+- **RabbitMQ 3-management**
+- **Docker & Docker Compose**
+- **JUnit 5 / Mockito** (pruebas)
+- **OpenAPI/Swagger** (documentación)
 
-## Características Principales
+---
 
-### Entidades JPA
-- **UUID como clave primaria**
-- **Auditoría automática** (createdAt, updatedAt)
-- **Validaciones Bean Validation**
-- **Enums tipados** para estados y tipos
-- **Índices optimizados**
+## Ejecución Local
 
-### APIs REST
-- **CRUD completo** para todas las entidades
-- **Validaciones de entrada**
-- **Manejo de errores estructurado**
-- **Códigos HTTP apropiados**
-- **Documentación OpenAPI**
-
-### Microservicios
-- **Comunicación asíncrona** vía RabbitMQ
-- **Transacciones distribuidas**
-- **Separación de responsabilidades**
-
-## Estructura del Proyecto
-
-```
-microservicios2/
-├── docker-compose.yml
-├── ms-clientes-personas/
-│   ├── Dockerfile
-│   ├── pom.xml
-│   └── src/main/java/com/example/msclientespersonas/
-│       ├── controller/
-│       │   ├── PersonaController.java
-│       │   └── ClienteController.java
-│       ├── dto/
-│       ├── entity/
-│       │   ├── enums/
-│       │   ├── AuditableEntity.java
-│       │   ├── Persona.java
-│       │   └── Cliente.java
-│       ├── mapper/
-│       ├── repository/
-│       ├── service/
-│       └── exception/
-└── ms-cuentas-movimientos/
-    ├── Dockerfile
-    ├── pom.xml
-    └── src/main/java/com/example/mscuentasmovimientos/
-        ├── controller/
-        │   ├── CuentaController.java
-        │   └── MovimientoController.java
-        ├── dto/
-        ├── entity/
-        │   ├── enums/
-        │   ├── AuditableEntity.java
-        │   ├── Cuenta.java
-        │   └── Movimiento.java
-        ├── mapper/
-        ├── repository/
-        ├── service/
-        └── exception/
-```
-
-## APIs Disponibles
-
-### ms-clientes-personas (http://localhost:8081)
-
-#### Personas
-- `GET /api/personas` - Listar todas las personas
-- `GET /api/personas/{id}` - Obtener persona por ID
-- `POST /api/personas` - Crear nueva persona
-- `PUT /api/personas/{id}` - Actualizar persona
-- `DELETE /api/personas/{id}` - Eliminar persona
-
-#### Clientes
-- `GET /api/clientes` - Listar todos los clientes
-- `GET /api/clientes/{id}` - Obtener cliente por ID
-- `POST /api/clientes` - Crear nuevo cliente
-- `PUT /api/clientes/{id}` - Actualizar cliente
-- `DELETE /api/clientes/{id}` - Eliminar cliente
-
-### ms-cuentas-movimientos (http://localhost:8082)
-
-#### Cuentas
-- `GET /api/cuentas` - Listar todas las cuentas
-- `GET /api/cuentas/{id}` - Obtener cuenta por ID
-- `GET /api/cuentas/cliente/{clienteId}` - Cuentas por cliente
-- `POST /api/cuentas` - Crear nueva cuenta
-- `PUT /api/cuentas/{id}` - Actualizar cuenta
-- `DELETE /api/cuentas/{id}` - Eliminar cuenta
-
-#### Movimientos
-- `GET /api/movimientos` - Listar todos los movimientos
-- `GET /api/movimientos/{id}` - Obtener movimiento por ID
-- `GET /api/movimientos/cuenta/{cuentaId}` - Movimientos por cuenta
-- `GET /api/movimientos/cuenta/{cuentaId}/fecha?fechaInicio=...&fechaFin=...` - Movimientos por rango de fechas
-- `POST /api/movimientos` - Crear nuevo movimiento
-- `DELETE /api/movimientos/{id}` - Eliminar movimiento
-
-#### Reportes
-- `GET /reportes?clienteId={uuid}&fechaInicio={datetime}&fechaFin={datetime}` - Generar reporte bancario completo
-
-### Formato de Parámetros de Reporte
-
-- `clienteId`: UUID del cliente (requerido)
-- `fechaInicio`: Fecha/hora de inicio en formato ISO 8601 (yyyy-MM-dd'T'HH:mm:ss) (requerido)
-- `fechaFin`: Fecha/hora de fin en formato ISO 8601 (yyyy-MM-dd'T'HH:mm:ss) (requerido)
-
-### Respuesta del Reporte
-
-```json
-{
-  "cliente": {
-    "id": "uuid",
-    "nombre": "string",
-    "identificacion": "string",
-    "direccion": "string",
-    "telefono": "string",
-    "fechaCreacion": "datetime"
-  },
-  "cuentas": [
-    {
-      "id": "uuid",
-      "numeroCuenta": "string",
-      "tipoCuenta": "AHORROS/CORRIENTE",
-      "estado": "ACTIVA/INACTIVA",
-      "saldoInicial": 1000.00,
-      "saldoDisponible": 950.00,
-      "fechaCreacion": "datetime",
-      "movimientos": [...]
-    }
-  ],
-  "movimientos": [...],
-  "saldoInicialTotal": 1000.00,
-  "saldoDisponibleTotal": 950.00
-### Ejemplo de Uso del Reporte
-
-```bash
-curl -X GET "http://localhost:8082/reportes?clienteId=123e4567-e89b-12d3-a456-426614174000&fechaInicio=2026-01-01T00:00:00&fechaFin=2026-12-31T23:59:59" \
-  -H "accept: application/json"
-```
-
-### Notas sobre el Reporte
-
-- Los datos del cliente son simulados (en producción requeriría integración con ms-clientes-personas)
-- Los movimientos están filtrados por el rango de fechas especificado
-- Los saldos totales representan la suma de todas las cuentas del cliente
-- Todas las operaciones son de solo lectura y no afectan los datos
-
-## Documentación API
-
-Cada microservicio incluye documentación OpenAPI/Swagger:
-
-- ms-clientes-personas: http://localhost:8081/swagger-ui.html
-- ms-cuentas-movimientos: http://localhost:8082/swagger-ui.html
-
-## RabbitMQ Management
-
-- URL: http://localhost:15672
-- Usuario: guest
-- Contraseña: guest
-
-## Desarrollo
-
-### Prerrequisitos
+### Requisitos previos
 
 - Java 21
 - Maven 3.9+
 - Docker y Docker Compose
 
-## Docker Optimizado
-
-### Dockerfile Multi-Stage
-
-Los Dockerfiles del proyecto están optimizados con buenas prácticas de seguridad y rendimiento:
-
-**Características principales:**
-
-1. **Multi-stage build**
-   - Stage 1: Build con Maven (compilación)
-   - Stage 2: Runtime con imagen lightweight alpine
-
-### Imagen lightweight
-   - Base: `eclipse-temurin:21-jre-alpine` (~170MB vs 500MB de jammy)
-   - Solo dependencias runtime necesarias
-   - **Tamaño final: ~220-250MB por microservicio**
-
-3. **Seguridad**
-   - ✅ Usuario no-root: `spring` (no ejecuta como root)
-   - ✅ Permisos restrictivos en archivos
-   - ✅ Sin herramientas de debugging innecesarias
-   - ✅ Health checks automáticos
-   - ✅ Metadata de imagen (LABELS)
-
-4. **Flexibilidad**
-   - ✅ Puerto configurable via `APP_PORT` ARG (default: 8081/8082)
-   - ✅ Soporte para variables de entorno `JAVA_OPTS`
-   - ✅ GC optimizado: `-XX:+UseG1GC`
-   - ✅ Heap dump en OOM: `-XX:+HeapDumpOnOutOfMemoryError`
-   - ✅ Zona horaria configurable: `-Duser.timezone=UTC`
-
-5. **Health Check**
-   - Endpoint de salud integrado
-   - Intervalo: 30s, Timeout: 5s, Retries: 3
-
-### Ejemplo de construcción custom
+### Ejecución con Maven
 
 ```bash
-# Build con puerto personalizado
-docker build -t ms-cuentas-movimientos:1.0 \
-  --build-arg APP_PORT=9090 \
-  ms-cuentas-movimientos/
+# En cada microservicio
+cd ms-clientes-personas
+mvn spring-boot:run
 
-# Run con puerto mappings custom
-docker run -p 9090:9090 \
-  -e SERVER_PORT=9090 \
-  ms-cuentas-movimientos:1.0
+cd ms-cuentas-movimientos
+mvn spring-boot:run
 ```
 
-### Desplegar todo con Docker Compose
+### Ejecución con Docker Compose (recomendado)
 
 ```bash
 docker compose up --build
 ```
 
-### Variables de Entorno
+Esto levanta:
+- 2 microservicios Spring Boot
+- 2 instancias PostgreSQL
+- RabbitMQ con UI de administración
 
-Las aplicaciones utilizan variables de entorno configuradas en `docker-compose.yml`:
+---
 
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `SPRING_RABBITMQ_HOST`
-- `SPRING_RABBITMQ_PORT`
-- `SPRING_RABBITMQ_USERNAME`
-- `SPRING_RABBITMQ_PASSWORD`
-- `SERVER_PORT`
-- `JAVA_OPTS` (opcionales, para JVM tuning)
+## Endpoints Principales
 
-**Para documentación completa de Docker, ver [DOCKER.md](DOCKER.md)**
+### ms-clientes-personas
 
-### Validar Dockerfiles optimizados
+- `POST /api/clientes` – Crear cliente
+- `GET /api/clientes/{id}` – Consultar cliente
+- `GET /api/clientes` – Listar clientes
+
+### ms-cuentas-movimientos
+
+- `POST /api/cuentas` – Crear cuenta
+- `GET /api/cuentas/{id}` – Consultar cuenta
+- `POST /api/movimientos` – Registrar movimiento (depósito/retiro)
+- `GET /api/movimientos/cuenta/{cuentaId}` – Movimientos por cuenta
+- `GET /reportes?clienteId={uuid}&fechaInicio={datetime}&fechaFin={datetime}` – Reporte bancario completo
+
+### Documentación interactiva
+
+- Swagger UI:  
+  - [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)  
+  - [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html)
+
+---
+
+## Pruebas
+
+### Unitarias
+
+- JUnit 5 y Mockito
+- Cobertura de lógica de negocio y validaciones
+
+### Integración
+
+- MockMvc para endpoints REST
+- Base de datos H2 en memoria para tests
+
+### Ejecución de pruebas
 
 ```bash
-# Linux/Mac
-bash scripts/validate-docker.sh
-
-# Resultado esperado: 100% de características encontradas
+mvn test
 ```
 
+---
 
-## Despliegue
+## Decisiones Técnicas
 
-Ver el documento `DEPLOYMENT.md` para instrucciones detalladas de ejecución.
+- **Arquitectura hexagonal**: separación clara entre controladores, servicios, repositorios y DTOs.
+- **UUID como clave primaria**: evita colisiones y facilita la federación de datos.
+- **Validaciones exhaustivas**: tanto a nivel DTO como entidad.
+- **Reglas de negocio centralizadas**: en servicios, no en controladores.
+- **Bloqueo pesimista en retiros**: evita condiciones de carrera en concurrencia.
+- **Mensajería asíncrona**: RabbitMQ para desacoplar procesos y permitir escalabilidad.
+- **Docker multi-stage**: imágenes ligeras, seguras y configurables por puerto.
+
+---
+
+## Mejoras Futuras
+
+- Implementar API Gateway y autenticación JWT
+- Manejo de errores global y trazabilidad distribuida (correlation-id)
+- Integración con servicios externos (notificaciones, auditoría)
+- Métricas y monitoreo (Prometheus, Grafana)
+- Pruebas E2E automatizadas
+- Escalado horizontal con Kubernetes
+- Documentación avanzada con ejemplos de negocio reales
+
+---
+
+## Comunicación Asíncrona
+
+- **RabbitMQ**: utilizado para publicar eventos de creación/actualización de clientes y movimientos.
+- **Productores y consumidores**: cada microservicio puede emitir y/o consumir mensajes según su responsabilidad.
+- **Ventajas**:
+  - Desacoplamiento entre servicios
+  - Tolerancia a fallos y reintentos
+  - Escalabilidad y extensibilidad futura
+
+---
+
+¿Dudas? Contacta al autor del reto o revisa la documentación OpenAPI incluida en cada microservicio.
