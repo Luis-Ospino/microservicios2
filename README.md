@@ -202,6 +202,61 @@ Cada microservicio incluye documentación OpenAPI/Swagger:
 - Maven 3.9+
 - Docker y Docker Compose
 
+## Docker Optimizado
+
+### Dockerfile Multi-Stage
+
+Los Dockerfiles del proyecto están optimizados con buenas prácticas de seguridad y rendimiento:
+
+**Características principales:**
+
+1. **Multi-stage build**
+   - Stage 1: Build con Maven (compilación)
+   - Stage 2: Runtime con imagen lightweight alpine
+
+### Imagen lightweight
+   - Base: `eclipse-temurin:21-jre-alpine` (~170MB vs 500MB de jammy)
+   - Solo dependencias runtime necesarias
+   - **Tamaño final: ~220-250MB por microservicio**
+
+3. **Seguridad**
+   - ✅ Usuario no-root: `spring` (no ejecuta como root)
+   - ✅ Permisos restrictivos en archivos
+   - ✅ Sin herramientas de debugging innecesarias
+   - ✅ Health checks automáticos
+   - ✅ Metadata de imagen (LABELS)
+
+4. **Flexibilidad**
+   - ✅ Puerto configurable via `APP_PORT` ARG (default: 8081/8082)
+   - ✅ Soporte para variables de entorno `JAVA_OPTS`
+   - ✅ GC optimizado: `-XX:+UseG1GC`
+   - ✅ Heap dump en OOM: `-XX:+HeapDumpOnOutOfMemoryError`
+   - ✅ Zona horaria configurable: `-Duser.timezone=UTC`
+
+5. **Health Check**
+   - Endpoint de salud integrado
+   - Intervalo: 30s, Timeout: 5s, Retries: 3
+
+### Ejemplo de construcción custom
+
+```bash
+# Build con puerto personalizado
+docker build -t ms-cuentas-movimientos:1.0 \
+  --build-arg APP_PORT=9090 \
+  ms-cuentas-movimientos/
+
+# Run con puerto mappings custom
+docker run -p 9090:9090 \
+  -e SERVER_PORT=9090 \
+  ms-cuentas-movimientos:1.0
+```
+
+### Desplegar todo con Docker Compose
+
+```bash
+docker compose up --build
+```
+
 ### Variables de Entorno
 
 Las aplicaciones utilizan variables de entorno configuradas en `docker-compose.yml`:
@@ -214,6 +269,19 @@ Las aplicaciones utilizan variables de entorno configuradas en `docker-compose.y
 - `SPRING_RABBITMQ_USERNAME`
 - `SPRING_RABBITMQ_PASSWORD`
 - `SERVER_PORT`
+- `JAVA_OPTS` (opcionales, para JVM tuning)
+
+**Para documentación completa de Docker, ver [DOCKER.md](DOCKER.md)**
+
+### Validar Dockerfiles optimizados
+
+```bash
+# Linux/Mac
+bash scripts/validate-docker.sh
+
+# Resultado esperado: 100% de características encontradas
+```
+
 
 ## Despliegue
 

@@ -63,6 +63,8 @@ services:
     build:
       context: ./ms-clientes-personas
       dockerfile: Dockerfile
+      args:
+        APP_PORT: 8081
     image: ms-clientes-personas:latest
     container_name: ms_clientes_personas
     restart: unless-stopped
@@ -92,6 +94,8 @@ services:
     build:
       context: ./ms-cuentas-movimientos
       dockerfile: Dockerfile
+      args:
+        APP_PORT: 8082
     image: ms-cuentas-movimientos:latest
     container_name: ms_cuentas_movimientos
     restart: unless-stopped
