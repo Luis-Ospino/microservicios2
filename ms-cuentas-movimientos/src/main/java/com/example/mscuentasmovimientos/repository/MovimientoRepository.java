@@ -17,6 +17,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, UUID> {
 
     List<Movimiento> findByCuentaIdAndFechaBetween(UUID cuentaId, LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
+    List<Movimiento> findByCuentaIdInAndFechaBetween(List<UUID> cuentaIds, LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
     @Query("SELECT m FROM Movimiento m WHERE m.cuentaId = :cuentaId ORDER BY m.fecha DESC")
     List<Movimiento> findByCuentaIdOrderByFechaDesc(@Param("cuentaId") UUID cuentaId);
 }

@@ -131,6 +131,56 @@ microservicios2/
 - `POST /api/movimientos` - Crear nuevo movimiento
 - `DELETE /api/movimientos/{id}` - Eliminar movimiento
 
+#### Reportes
+- `GET /reportes?clienteId={uuid}&fechaInicio={datetime}&fechaFin={datetime}` - Generar reporte bancario completo
+
+### Formato de Parámetros de Reporte
+
+- `clienteId`: UUID del cliente (requerido)
+- `fechaInicio`: Fecha/hora de inicio en formato ISO 8601 (yyyy-MM-dd'T'HH:mm:ss) (requerido)
+- `fechaFin`: Fecha/hora de fin en formato ISO 8601 (yyyy-MM-dd'T'HH:mm:ss) (requerido)
+
+### Respuesta del Reporte
+
+```json
+{
+  "cliente": {
+    "id": "uuid",
+    "nombre": "string",
+    "identificacion": "string",
+    "direccion": "string",
+    "telefono": "string",
+    "fechaCreacion": "datetime"
+  },
+  "cuentas": [
+    {
+      "id": "uuid",
+      "numeroCuenta": "string",
+      "tipoCuenta": "AHORROS/CORRIENTE",
+      "estado": "ACTIVA/INACTIVA",
+      "saldoInicial": 1000.00,
+      "saldoDisponible": 950.00,
+      "fechaCreacion": "datetime",
+      "movimientos": [...]
+    }
+  ],
+  "movimientos": [...],
+  "saldoInicialTotal": 1000.00,
+  "saldoDisponibleTotal": 950.00
+### Ejemplo de Uso del Reporte
+
+```bash
+curl -X GET "http://localhost:8082/reportes?clienteId=123e4567-e89b-12d3-a456-426614174000&fechaInicio=2026-01-01T00:00:00&fechaFin=2026-12-31T23:59:59" \
+  -H "accept: application/json"
+```
+
+### Notas sobre el Reporte
+
+- Los datos del cliente son simulados (en producción requeriría integración con ms-clientes-personas)
+- Los movimientos están filtrados por el rango de fechas especificado
+- Los saldos totales representan la suma de todas las cuentas del cliente
+- Todas las operaciones son de solo lectura y no afectan los datos
+
 ## Documentación API
 
 Cada microservicio incluye documentación OpenAPI/Swagger:
