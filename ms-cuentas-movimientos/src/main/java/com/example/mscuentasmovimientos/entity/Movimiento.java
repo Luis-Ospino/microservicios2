@@ -36,7 +36,8 @@ public class Movimiento extends AuditableEntity {
     private TipoMovimiento tipoMovimiento;
 
     @NotNull(message = "El valor es requerido")
-    @DecimalMin(value = "0.01", message = "El valor debe ser mayor a 0")
+    @DecimalMin(value = "-999999999999.99", inclusive = false, message = "El valor debe ser mayor a -999999999999.99")
+    @DecimalMax(value = "999999999999.99", inclusive = false, message = "El valor debe ser menor a 999999999999.99")
     @Digits(integer = 15, fraction = 2, message = "El valor debe tener máximo 15 dígitos enteros y 2 decimales")
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;

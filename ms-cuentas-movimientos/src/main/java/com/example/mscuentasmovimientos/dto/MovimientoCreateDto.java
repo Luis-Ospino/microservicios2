@@ -24,7 +24,8 @@ public class MovimientoCreateDto {
     private TipoMovimiento tipoMovimiento;
 
     @NotNull(message = "El valor es requerido")
-    @DecimalMin(value = "0.01", message = "El valor debe ser mayor a 0")
+    @DecimalMin(value = "-999999999999.99", inclusive = false, message = "El valor debe ser mayor a -999999999999.99")
+    @DecimalMax(value = "999999999999.99", inclusive = false, message = "El valor debe ser menor a 999999999999.99")
     @Digits(integer = 15, fraction = 2, message = "El valor debe tener máximo 15 dígitos enteros y 2 decimales")
     private BigDecimal valor;
 
