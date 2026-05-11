@@ -2,8 +2,10 @@ package com.example.msclientespersonas.service;
 
 import com.example.msclientespersonas.dto.ClienteCreateDto;
 import com.example.msclientespersonas.dto.ClienteDto;
+import com.example.msclientespersonas.dto.ClienteUpdateDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ClienteService {
 
@@ -11,5 +13,9 @@ public interface ClienteService {
 
     List<ClienteDto> findAllClientes();
 
-    ClienteDto findClienteById(Long id);
+    ClienteDto findClienteById(UUID id);
+
+    ClienteDto updateCliente(UUID id, ClienteUpdateDto clienteUpdateDto);
+
+    void deleteCliente(UUID id);
 }
